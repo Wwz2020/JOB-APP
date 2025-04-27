@@ -87,6 +87,10 @@ st.sidebar.info(
     "4. If jobs matched, generate and download a cover letter!"
 )
 
+# Initialize session state
+if "analyzed" not in st.session_state:
+    st.session_state.analyzed = False
+
 cv_text = st.text_area("Paste your CV text below:", height=300)
 
 if st.button("Analyze CV"):
@@ -94,40 +98,48 @@ if st.button("Analyze CV"):
         st.warning("⚠️ Please paste your CV first.")
     else:
         skills, degrees, experiences = extract_qualifications(cv_text)
-
-        st.subheader("Detected Skills:")
-        st.write(skills if skills else "No skills detected.")
-
-        st.subheader("Detected Degrees:")
-        st.write(degrees if degrees else "No degrees detected.")
-
-        st.subheader("Detected Experiences:")
-        st.write(experiences if experiences else "No experiences detected.")
-
         matched_jobs = match_jobs(skills, degrees, sample_jobs)
-
-        st.subheader("Matched Job Opportunities:")
-        if matched_jobs:
-            for job in matched_jobs:
-                st.success(f"- {job}")
-        else:
-            st.info("No matching jobs found.")
-
         advice = generate_career_advice(skills, matched_jobs)
 
-        st.subheader("Career Advice:")
-        st.write(advice)
+        # Save results to session_state
+        st.session_state.skills = skills
+        st.session_state.degrees = degrees
+        st.session_state.experiences = experiences
+        st.session_state.matched_jobs = matched_jobs
+        st.session_state.advice = advice
+        st.session_state.analyzed = True
 
-        if matched_jobs:
-            name = st.text_input("Enter your name for the cover letter:")
-            if name:
-                cover_letter = generate_cover_letter(name, matched_jobs[0])
-                st.subheader("Generated Cover Letter:")
-                st.code(cover_letter)
+# After analysis
+if st.session_state.analyzed:
+    st.subheader("Detected Skills:")
+    st.write(st.session_state.skills if st.session_state.skills else "No skills detected.")
 
-                st.download_button(
-                    label="💾 Download Cover Letter",
-                    data=cover_letter,
-                    file_name="Cover_Letter.txt",
-                    mime="text/plain"
-                )
+    st.subheader("Detected Degrees:")
+    st.write(st.session_state.degrees if st.session_state.degrees else "No degrees detected.")
+
+    st.subheader("Detected Experiences:")
+    st.write(st.session_state.experiences if st.session_state.experiences else "No experiences detected.")
+
+    st.subheader("Matched Job Opportunities:")
+    if st.session_state.matched_jobs:
+        for job in st.session_state.matched_jobs:
+            st.success(f"- {job}")
+    else:
+        st.info("No matching jobs found.")
+
+    st.subheader("Career Advice:")
+    st.write(st.session_state.advice)
+
+    if st.session_state.matched_jobs:
+        name = st.text_input("Enter your name for the cover letter:")
+        if name:
+            cover_letter = generate_cover_letter(name, st.session_state.matched_jobs[0])
+            st.subheader("Generated Cover Letter:")
+            st.code(cover_letter)
+
+            st.download_button(
+                label="💾 Download Cover Letter",
+                data=cover_letter,
+                file_name="Cover_Letter.txt",
+                mime="text/plain"
+            )
