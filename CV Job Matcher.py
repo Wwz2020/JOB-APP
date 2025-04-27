@@ -75,14 +75,23 @@ sample_jobs = [
     {"title": "Investment Banking Associate", "skills_required": ["PowerPoint", "Valuation"], "degree_required": "Master of Finance"}
 ]
 
-# Streamlit App
-st.title("\ud83d\udcc8 CV Analyzer for Finance Careers")
+# --- Streamlit App Starts Here ---
 
-cv_text = st.text_area("Paste your CV text here:", height=300)
+st.title("CV Analyzer for Finance Careers")
+
+st.sidebar.title("Instructions")
+st.sidebar.info(
+    "1. Paste your CV text into the box.\n"
+    "2. Click 'Analyze CV'.\n"
+    "3. View detected skills, degrees, job matches, and career advice.\n"
+    "4. If jobs matched, generate and download a cover letter!"
+)
+
+cv_text = st.text_area("Paste your CV text below:", height=300)
 
 if st.button("Analyze CV"):
     if cv_text.strip() == "":
-        st.warning("\ud83d\udeab Please paste your CV first.")
+        st.warning("⚠️ Please paste your CV first.")
     else:
         skills, degrees, experiences = extract_qualifications(cv_text)
 
@@ -116,4 +125,9 @@ if st.button("Analyze CV"):
                 st.subheader("Generated Cover Letter:")
                 st.code(cover_letter)
 
-                st.download_button("\ud83d\udcbe Download Cover Letter", cover_letter, file_name="Cover_Letter.txt")
+                st.download_button(
+                    label="💾 Download Cover Letter",
+                    data=cover_letter,
+                    file_name="Cover_Letter.txt",
+                    mime="text/plain"
+                )
